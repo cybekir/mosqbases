@@ -7,40 +7,50 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .btn-save { background-color: #10B981; color: white; }
-        .btn-save:hover { background-color: #059669; }
-        .btn-edit { background-color: #F59E0B; color: white; }
-        .btn-edit:hover { background-color: #D97706; }
-        .btn-delete { background-color: #8B5CF6; color: white; }
-        .btn-delete:hover { background-color: #7C3AED; }
+        body { font-family: 'Inter', sans-serif; background-color: #080D1A; color: #E2E8F0; }
+        .card-dark { background-color: #0F172A; border: 1px solid rgba(16, 185, 129, 0.2); }
+        .input-dark { background-color: #1E293B; border: 1px solid #334155; color: #F8FAFC; }
+        .input-dark:focus { border-color: #10B981; outline: none; }
+        .btn-neon { background-color: #10B981; color: #022C22; font-weight: 700; }
+        .btn-neon:hover { background-color: #34D399; }
+        .btn-save { background-color: #059669; color: white; }
+        .btn-save:hover { background-color: #047857; }
+        .btn-edit { background-color: #D97706; color: white; }
+        .btn-edit:hover { background-color: #B45309; }
+        .btn-delete { background-color: #7C3AED; color: white; }
+        .btn-delete:hover { background-color: #6D28D9; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-900 p-4 md:p-8">
+<body class="min-h-screen text-slate-100 p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto space-y-6">
         
         <!-- En-tête -->
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                    <span>🕌</span> Moteur de Recherche Mosquées Maghreb
-                </h1>
-                <p class="text-sm text-slate-500 mt-1">Recherchez, éditez et exportez les lieux de culte en Tunisie, Maroc, Algérie et Libye.</p>
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center card-dark p-6 rounded-2xl shadow-xl gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl">
+                    🕌
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-wide">
+                        Mosquées Maghreb
+                    </h1>
+                    <p class="text-xs text-emerald-400/80 font-medium">Recherche & Cartographie interactive des lieux de culte</p>
+                </div>
             </div>
-            <button onclick="exportCSV()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition">
-                <span>📥 Export CSV</span>
+            <button onclick="exportCSV()" class="flex items-center gap-2 btn-neon px-4 py-2.5 rounded-xl shadow-lg transition">
+                <span>📥 Copier / Export CSV</span>
             </button>
         </header>
 
         <!-- Formulaire de Recherche -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <div class="card-dark p-6 rounded-2xl shadow-xl space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 
-                <!-- Pays (Maghreb uniquement) -->
+                <!-- Pays -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Pays (Maghreb)</label>
-                    <select id="countrySelect" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-medium">
+                    <label class="block text-xs font-bold text-emerald-400 tracking-wider uppercase mb-2">PAYS</label>
+                    <select id="countrySelect" class="w-full px-3 py-2.5 input-dark rounded-xl font-medium text-sm">
                         <option value="TN" selected>🇹🇳 Tunisie</option>
                         <option value="MA">🇲🇦 Maroc</option>
                         <option value="DZ">🇩🇿 Algérie</option>
@@ -48,10 +58,10 @@
                     </select>
                 </div>
 
-                <!-- Échelle de recherche -->
+                <!-- Portée -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Portée</label>
-                    <select id="scopeSelect" onchange="toggleScopeInput()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-medium">
+                    <label class="block text-xs font-bold text-emerald-400 tracking-wider uppercase mb-2">TYPE / PORTÉE</label>
+                    <select id="scopeSelect" onchange="toggleScopeInput()" class="w-full px-3 py-2.5 input-dark rounded-xl font-medium text-sm">
                         <option value="city" selected>Par Ville / Commune</option>
                         <option value="region">Par Gouvernorat / Région</option>
                     </select>
@@ -59,21 +69,21 @@
 
                 <!-- Champ Nom de Ville -->
                 <div>
-                    <label id="locationLabel" class="block text-xs font-semibold text-slate-500 uppercase mb-2">Nom de la Ville</label>
-                    <input type="text" id="locationInput" placeholder="Ex: Monastir, Nabeul, Mahdia..." value="Mahdia" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+                    <label id="locationLabel" class="block text-xs font-bold text-emerald-400 tracking-wider uppercase mb-2">VILLE OU RÉGION</label>
+                    <input type="text" id="locationInput" placeholder="Ex: Mahdia, Monastir, Nabeul..." value="Mahdia" class="w-full px-3 py-2.5 input-dark rounded-xl text-sm font-medium">
                 </div>
 
                 <!-- Bouton Lancer Recherche -->
                 <div>
-                    <button onclick="searchMosques()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition flex justify-center items-center gap-2">
-                        <span>🔍 Lancer la recherche</span>
+                    <button onclick="searchMosques()" class="w-full btn-neon px-4 py-2.5 rounded-xl shadow-lg transition flex justify-center items-center gap-2">
+                        <span>🔍 Rechercher</span>
                     </button>
                 </div>
             </div>
 
             <!-- Message d'état -->
-            <div id="statusMsg" class="hidden mt-4 p-3 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium flex items-center gap-2">
-                <svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <div id="statusMsg" class="hidden mt-2 p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 rounded-xl text-sm font-medium flex items-center gap-2">
+                <svg class="animate-spin h-4 w-4 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -82,26 +92,26 @@
         </div>
 
         <!-- Tableau des résultats -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+        <div class="card-dark rounded-2xl shadow-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
                 <div class="flex items-center gap-3">
-                    <h2 class="font-semibold text-slate-800">Résultats de la recherche</h2>
-                    <span id="countBadge" class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold">0 lieu(x)</span>
+                    <h2 class="font-bold text-white tracking-wide">Résultats de la recherche</h2>
+                    <span id="countBadge" class="bg-emerald-950 text-emerald-300 border border-emerald-500/40 px-3 py-1 rounded-full text-xs font-bold">0 lieu(x)</span>
                 </div>
-                <button onclick="openAddModal()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 py-2 rounded-xl shadow-sm transition">
+                <button onclick="openAddModal()" class="flex items-center gap-1.5 btn-neon text-xs px-3 py-2 rounded-xl shadow-md transition">
                     <span>➕ Ajouter une mosquée</span>
                 </button>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-xs">
+                    <thead class="bg-slate-900 border-b border-slate-800 text-emerald-400 uppercase text-xs font-bold">
                         <tr>
-                            <th class="px-4 py-3 min-w-[200px]">Nom</th>
-                            <th class="px-4 py-3 min-w-[280px] max-w-[360px]">Adresse / Carte Maps</th>
-                            <th class="px-4 py-3">Coordonnées GPS</th>
-                            <th class="px-4 py-3">Téléphone</th>
-                            <th class="px-4 py-3 text-center">Actions</th>
+                            <th class="px-4 py-3.5 min-w-[200px]">Nom</th>
+                            <th class="px-4 py-3.5 min-w-[280px] max-w-[360px]">Adresse / Carte Maps</th>
+                            <th class="px-4 py-3.5">Coordonnées GPS</th>
+                            <th class="px-4 py-3.5">Téléphone</th>
+                            <th class="px-4 py-3.5 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="resultsTableBody">
@@ -112,36 +122,36 @@
     </div>
 
     <!-- Modale d'Édition / Ajout -->
-    <div id="editModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
-            <h3 id="modalTitle" class="text-lg font-bold text-slate-800 border-b pb-2">Modifier l'enregistrement</h3>
+    <div id="editModal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden flex justify-center items-center p-4 z-50">
+        <div class="card-dark rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-emerald-500/40">
+            <h3 id="modalTitle" class="text-lg font-bold text-emerald-400 border-b border-slate-800 pb-2">Modifier l'enregistrement</h3>
             
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Nom de la mosquée</label>
-                    <input type="text" id="editNom" placeholder="Ex: Grande Mosquée de Mahdia" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Nom de la mosquée</label>
+                    <input type="text" id="editNom" placeholder="Ex: Grande Mosquée de Mahdia" class="w-full p-2.5 input-dark rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Ville</label>
-                    <input type="text" id="editVille" placeholder="Ex: Mahdia" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Ville</label>
+                    <input type="text" id="editVille" placeholder="Ex: Mahdia" class="w-full p-2.5 input-dark rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Adresse</label>
-                    <input type="text" id="editAdresse" placeholder="Ex: Centre Historique, Mahdia, Tunisie" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Adresse</label>
+                    <input type="text" id="editAdresse" placeholder="Ex: Centre Historique, Mahdia, Tunisie" class="w-full p-2.5 input-dark rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Coordonnées GPS (Lat, Lon)</label>
-                    <input type="text" id="editGps" placeholder="Ex: 35.5047, 11.0622" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Coordonnées GPS (Lat, Lon)</label>
+                    <input type="text" id="editGps" placeholder="Ex: 35.5047, 11.0622" class="w-full p-2.5 input-dark rounded-xl text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Téléphone</label>
-                    <input type="text" id="editTelephone" placeholder="Optionnel" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Téléphone</label>
+                    <input type="text" id="editTelephone" placeholder="Optionnel" class="w-full p-2.5 input-dark rounded-xl text-sm">
                 </div>
             </div>
 
-            <div class="flex justify-end gap-2 pt-4 border-t">
-                <button onclick="closeModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Annuler</button>
-                <button onclick="saveModalChanges()" class="px-4 py-2 text-sm bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700">Enregistrer</button>
+            <div class="flex justify-end gap-2 pt-4 border-t border-slate-800">
+                <button onclick="closeModal()" class="px-4 py-2 text-sm text-slate-400 hover:text-white rounded-lg">Annuler</button>
+                <button onclick="saveModalChanges()" class="px-4 py-2 text-sm btn-neon font-bold rounded-xl shadow-lg">Enregistrer</button>
             </div>
         </div>
     </div>
@@ -149,7 +159,6 @@
     <script>
         let mosquesData = [];
         let editingIndex = null;
-        let sortAscending = true;
 
         const countryNamesFR = {
             TN: "Tunisie",
@@ -188,7 +197,6 @@
             statusText.innerText = `Recherche des lieux à ${locationVal} (${countryName})...`;
 
             try {
-                // Termes de recherche élargis (français, anglais, arabe)
                 const searchUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent('mosque ' + locationVal + ' ' + countryName)}&format=json&addressdetails=1&limit=300`;
 
                 const response = await fetch(searchUrl, {
@@ -220,7 +228,7 @@
                 document.getElementById('countBadge').innerText = "0 lieu(x)";
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-red-500 font-medium">
+                        <td colspan="5" class="px-4 py-8 text-center text-red-500 font-medium">
                             ⚠️ ${escapeHtml(err.message || "Erreur de connexion lors de la recherche.")}
                         </td>
                     </tr>
@@ -277,12 +285,10 @@
                     mapsUrl: mapsUrl,
                     lat: latVal,
                     lon: lonVal,
-                    telephone: addr.phone || "-",
-                    website: addr.website || "-"
+                    telephone: addr.phone || "-"
                 });
             });
 
-            // Tri par nom de mosquée
             mosquesData.sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }));
             renderTable();
         }
@@ -307,29 +313,29 @@
 
             mosquesData.forEach((item, index) => {
                 const tr = document.createElement('tr');
-                tr.className = 'border-b border-slate-100 hover:bg-slate-50 transition duration-150';
+                tr.className = 'border-b border-slate-800/60 hover:bg-slate-800/40 transition duration-150';
                 
                 const hasGps = item.lat && item.lon;
                 const gpsFull = hasGps ? `${parseFloat(item.lat).toFixed(5)}, ${parseFloat(item.lon).toFixed(5)}` : '-';
                 
                 tr.innerHTML = `
-                    <td class="px-4 py-3 font-semibold text-slate-800 max-w-[220px]">
+                    <td class="px-4 py-3 font-semibold text-white max-w-[220px]">
                         <div class="line-clamp-2" title="${escapeHtml(item.nom)}">${escapeHtml(item.nom)}</div>
                     </td>
                     <td class="px-4 py-3 max-w-[340px]">
-                        <a href="${item.mapsUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-medium block truncate" title="${escapeHtml(item.adresse)}">
+                        <a href="${item.mapsUrl}" target="_blank" rel="noopener noreferrer" class="text-emerald-400 hover:text-emerald-300 hover:underline font-medium block truncate" title="${escapeHtml(item.adresse)}">
                             ${escapeHtml(item.adresse)}
                         </a>
                     </td>
-                    <td class="px-4 py-3 text-slate-600 font-mono text-xs whitespace-nowrap">
+                    <td class="px-4 py-3 text-slate-300 font-mono text-xs whitespace-nowrap">
                         ${hasGps ? `
                             <div class="flex items-center gap-1.5">
-                                <span class="bg-slate-100 text-slate-700 px-2 py-1 rounded border border-slate-200 select-all">${gpsFull}</span>
-                                <button onclick="copyGps('${gpsFull}')" title="Copier les coordonnées" class="p-1 text-slate-400 hover:text-blue-600 rounded">📋</button>
+                                <span class="bg-slate-800 text-emerald-300 px-2 py-1 rounded border border-emerald-500/30 select-all">${gpsFull}</span>
+                                <button onclick="copyGps('${gpsFull}')" title="Copier les coordonnées" class="p-1 text-slate-400 hover:text-emerald-400 rounded">📋</button>
                             </div>
                         ` : '-'}
                     </td>
-                    <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${escapeHtml(item.telephone)}</td>
+                    <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${escapeHtml(item.telephone)}</td>
                     <td class="px-4 py-3 text-center">
                         <div class="flex items-center justify-center gap-1">
                             <button onclick="saveItem(${index})" class="px-2.5 py-1 text-xs rounded btn-save font-medium transition shadow-sm">💾 Sauvegarder</button>
@@ -353,7 +359,7 @@
         }
 
         function openAddModal() {
-            editingIndex = -1; // Index pour ajout
+            editingIndex = -1;
             document.getElementById('modalTitle').innerText = "Ajouter une mosquée";
             const defaultCity = document.getElementById('locationInput').value.trim() || "Mahdia";
             const countryCode = document.getElementById('countrySelect').value;
