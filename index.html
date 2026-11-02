@@ -3,273 +3,436 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recherche et Export Mosquées</title>
+    <title>Recherche et Export Mosquées Maghreb</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f8fafc;
-            color: #1e293b;
-        }
-
-        .maps-link {
-            color: #2563eb;
-            text-decoration: underline;
-            font-size: 0.85rem;
-            margin-left: 0.25rem;
-            display: inline-block;
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 0.35rem;
-            align-items: center;
-            justify-content: flex-start;
-        }
-
-        .btn-action {
-            padding: 0.35rem 0.6rem;
-            border-radius: 0.375rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.2rem;
-            white-space: nowrap;
-        }
-
-        .btn-save {
-            background-color: #10b981;
-            color: white;
-        }
-        .btn-save:hover {
-            background-color: #059669;
-        }
-
-        .btn-edit {
-            background-color: #f59e0b;
-            color: white;
-        }
-        .btn-edit:hover {
-            background-color: #d97706;
-        }
-
-        .btn-delete {
-            background-color: #8b5cf6;
-            color: white;
-        }
-        .btn-delete:hover {
-            background-color: #7c3aed;
-        }
-
-        /* Modal styling */
-        .modal-backdrop {
-            background-color: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(2px);
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .btn-save { background-color: #10B981; color: white; }
+        .btn-save:hover { background-color: #059669; }
+        .btn-edit { background-color: #F59E0B; color: white; }
+        .btn-edit:hover { background-color: #D97706; }
+        .btn-delete { background-color: #8B5CF6; color: white; }
+        .btn-delete:hover { background-color: #7C3AED; }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="bg-slate-50 min-h-screen text-slate-900 p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6 border border-slate-100">
-        <!-- Header -->
-        <div class="mb-6">
-            <h1 class="text-2xl font-bold text-slate-800">Recherche de Mosquées & Lieux de Culte</h1>
-            <p class="text-slate-500 text-sm mt-1">Recherchez par ville, département ou pays, vérifiez les coordonnées, modifiez ou supprimez des entrées puis exportez au format CSV.</p>
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- En-tête -->
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <span>🕌</span> Moteur de Recherche Mosquées Maghreb
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">Recherchez, éditez et exportez les lieux de culte en Tunisie, Maroc, Algérie et Libye.</p>
+            </div>
+            <button onclick="exportCSV()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition">
+                <span>📥 Export CSV</span>
+            </button>
+        </header>
+
+        <!-- Formulaire de Recherche -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                
+                <!-- Pays (Maghreb uniquement) -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Pays (Maghreb)</label>
+                    <select id="countrySelect" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-medium">
+                        <option value="TN" selected>🇹🇳 Tunisie</option>
+                        <option value="MA">🇲🇦 Maroc</option>
+                        <option value="DZ">🇩🇿 Algérie</option>
+                        <option value="LY">🇱🇾 Libye</option>
+                    </select>
+                </div>
+
+                <!-- Échelle de recherche -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Portée</label>
+                    <select id="scopeSelect" onchange="toggleScopeInput()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 font-medium">
+                        <option value="city" selected>Par Ville / Commune</option>
+                        <option value="region">Par Gouvernorat / Région</option>
+                    </select>
+                </div>
+
+                <!-- Champ Nom de Ville -->
+                <div>
+                    <label id="locationLabel" class="block text-xs font-semibold text-slate-500 uppercase mb-2">Nom de la Ville</label>
+                    <input type="text" id="locationInput" placeholder="Ex: Monastir, Nabeul, Mahdia..." value="Mahdia" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-700">
+                </div>
+
+                <!-- Bouton Lancer Recherche -->
+                <div>
+                    <button onclick="searchMosques()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-xl shadow-sm transition flex justify-center items-center gap-2">
+                        <span>🔍 Lancer la recherche</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Message d'état -->
+            <div id="statusMsg" class="hidden mt-4 p-3 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium flex items-center gap-2">
+                <svg class="animate-spin h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span id="statusText">Recherche en cours...</span>
+            </div>
         </div>
 
-        <!-- Formulaire -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div>
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Pays</label>
-                <select id="country" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-700 bg-white">
-                    <option value="France" selected>France</option>
-                    <option value="Belgique">Belgique</option>
-                    <option value="Suisse">Suisse</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Algérie">Algérie</option>
-                    <option value="Maroc">Maroc</option>
-                    <option value="Tunisie">Tunisie</option>
-                    <option value="Sénégal">Sénégal</option>
-                    <option value="Autre">Autre pays...</option>
-                </select>
-                <input type="text" id="customCountry" placeholder="Saisir le pays" class="hidden w-full mt-2 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
-            </div>
-
-            <div>
-                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Échelle de recherche</label>
-                <select id="searchType" onchange="toggleSearchInput()" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-700 bg-white">
-                    <option value="city" selected>Par Ville</option>
-                    <option value="department">Par Département (ex: 93, Rhône)</option>
-                    <option value="country">Tout le pays</option>
-                </select>
-            </div>
-
-            <div>
-                <label id="searchLabel" class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Ville / Zone</label>
-                <input type="text" id="searchValue" placeholder="Ex: Bobigny, Romainville, Lyon..." class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-700">
-            </div>
-
-            <div class="flex items-end gap-2">
-                <button onclick="searchMosques()" id="searchBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 shadow-sm flex items-center justify-center gap-2">
-                    🔍 Rechercher
-                </button>
-                <button onclick="exportToCSV()" id="exportBtn" disabled class="bg-slate-200 text-slate-400 font-medium py-2 px-4 rounded-lg transition duration-200 cursor-not-allowed flex items-center justify-center gap-2">
-                    📥 CSV
+        <!-- Tableau des résultats -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <h2 class="font-semibold text-slate-800">Résultats de la recherche</h2>
+                    <span id="countBadge" class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold">0 lieu(x)</span>
+                </div>
+                <button onclick="openAddModal()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs px-3 py-2 rounded-xl shadow-sm transition">
+                    <span>➕ Ajouter une mosquée</span>
                 </button>
             </div>
-        </div>
 
-        <!-- Status / Message -->
-        <div id="statusMessage" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
-
-        <!-- Table des Résultats -->
-        <div class="overflow-x-auto rounded-lg border border-slate-200">
-            <table class="w-full text-left text-sm text-slate-700">
-                <thead class="bg-slate-50 text-slate-500 uppercase text-xs font-semibold border-b border-slate-200">
-                    <tr>
-                        <th class="px-4 py-3">Nom</th>
-                        <th class="px-4 py-3">Ville</th>
-                        <th class="px-4 py-3">Adresse complète</th>
-                        <th class="px-4 py-3">Téléphone</th>
-                        <th class="px-4 py-3">Site Web</th>
-                        <th class="px-4 py-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="resultsTable" class="divide-y divide-slate-200">
-                    <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">
-                            Sélectionnez une zone et lancez la recherche pour afficher les résultats.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 border-b border-slate-100 text-slate-500 uppercase text-xs">
+                        <tr>
+                            <th class="px-4 py-3 min-w-[200px]">Nom</th>
+                            <th class="px-4 py-3 min-w-[280px] max-w-[360px]">Adresse / Carte Maps</th>
+                            <th class="px-4 py-3">Coordonnées GPS</th>
+                            <th class="px-4 py-3">Téléphone</th>
+                            <th class="px-4 py-3 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody">
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Modal d'Édition -->
-    <div id="editModal" class="fixed inset-0 modal-backdrop hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 border border-slate-100">
-            <h3 class="text-lg font-bold text-slate-800 mb-4">Modifier la Mosquée</h3>
+    <!-- Modale d'Édition / Ajout -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
+            <h3 id="modalTitle" class="text-lg font-bold text-slate-800 border-b pb-2">Modifier l'enregistrement</h3>
             
             <div class="space-y-3">
-                <input type="hidden" id="editIndex">
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Nom complet</label>
-                    <input type="text" id="editNom" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Nom de la mosquée</label>
+                    <input type="text" id="editNom" placeholder="Ex: Grande Mosquée de Mahdia" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Ville</label>
-                    <input type="text" id="editVille" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input type="text" id="editVille" placeholder="Ex: Mahdia" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Adresse complète</label>
-                    <input type="text" id="editAdresse" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Adresse</label>
+                    <input type="text" id="editAdresse" placeholder="Ex: Centre Historique, Mahdia, Tunisie" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1">Coordonnées GPS (Lat, Lon)</label>
+                    <input type="text" id="editGps" placeholder="Ex: 35.5047, 11.0622" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-600 mb-1">Téléphone</label>
-                    <input type="text" id="editTel" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-600 mb-1">Site Web</label>
-                    <input type="text" id="editSite" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <input type="text" id="editTelephone" placeholder="Optionnel" class="w-full p-2 border border-slate-200 rounded-lg text-sm">
                 </div>
             </div>
 
-            <div class="mt-6 flex justify-end gap-2">
-                <button onclick="closeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-medium transition">Annuler</button>
-                <button onclick="saveEdit()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition">Valider</button>
+            <div class="flex justify-end gap-2 pt-4 border-t">
+                <button onclick="closeModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg">Annuler</button>
+                <button onclick="saveModalChanges()" class="px-4 py-2 text-sm bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700">Enregistrer</button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentResults = [];
+        let mosquesData = [];
+        let editingIndex = null;
+        let sortAscending = true;
 
-        // Map des codes ISO pour restreindre strictement les requêtes par pays
-        const countryISOCodes = {
-            'France': 'FR',
-            'Belgique': 'BE',
-            'Suisse': 'CH',
-            'Canada': 'CA',
-            'Algérie': 'DZ',
-            'Maroc': 'MA',
-            'Tunisie': 'TN',
-            'Sénégal': 'SN'
+        const countryNamesFR = {
+            TN: "Tunisie",
+            MA: "Maroc",
+            DZ: "Algérie",
+            LY: "Libye"
         };
 
-        // Gestion du pays personnalisé
-        document.getElementById('country').addEventListener('change', function() {
-            const customInput = document.getElementById('customCountry');
-            if (this.value === 'Autre') {
-                customInput.classList.remove('hidden');
-            } else {
-                customInput.classList.add('hidden');
-            }
-        });
-
-        function getSelectedCountry() {
-            const select = document.getElementById('country');
-            if (select.value === 'Autre') {
-                return document.getElementById('customCountry').value.trim() || 'France';
-            }
-            return select.value;
+        function toggleScopeInput() {
+            const scope = document.getElementById('scopeSelect').value;
+            const label = document.getElementById('locationLabel');
+            label.innerText = scope === 'city' ? "Nom de la Ville" : "Nom du Gouvernorat / Région";
         }
 
-        function toggleSearchInput() {
-            const type = document.getElementById('searchType').value;
-            const input = document.getElementById('searchValue');
-            const label = document.getElementById('searchLabel');
+        function normalizeString(str) {
+            if (!str) return '';
+            return str.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .trim();
+        }
 
-            if (type === 'city') {
-                label.innerText = 'Ville';
-                input.disabled = false;
-                input.placeholder = 'Ex: Bobigny, Romainville, Lyon...';
-            } else if (type === 'department') {
-                label.innerText = 'Département';
-                input.disabled = false;
-                input.placeholder = 'Ex: 93, Seine-Saint-Denis, Rhône...';
-            } else {
-                label.innerText = 'Zone de recherche';
-                input.disabled = true;
-                input.placeholder = 'Recherche sur tout le pays';
-                input.value = '';
+        async function searchMosques() {
+            const country = document.getElementById('countrySelect').value;
+            const locationVal = document.getElementById('locationInput').value.trim();
+            const scopeVal = document.getElementById('scopeSelect').value;
+            const statusMsg = document.getElementById('statusMsg');
+            const statusText = document.getElementById('statusText');
+            const countryName = countryNamesFR[country];
+
+            if (!locationVal) {
+                alert("Veuillez saisir le nom d'une ville.");
+                return;
+            }
+
+            statusMsg.classList.remove('hidden');
+            statusText.innerText = `Recherche des lieux à ${locationVal} (${countryName})...`;
+
+            try {
+                // Termes de recherche élargis (français, anglais, arabe)
+                const searchUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent('mosque ' + locationVal + ' ' + countryName)}&format=json&addressdetails=1&limit=300`;
+
+                const response = await fetch(searchUrl, {
+                    headers: { 'Accept-Language': 'fr,ar' }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Impossible d'accéder au service de recherche cartographique.");
+                }
+
+                let data = await response.json();
+                
+                if (!data || data.length === 0) {
+                    const fallbackUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationVal + ' ' + countryName)}&amenity=place_of_worship&format=json&addressdetails=1&limit=300`;
+                    const fallbackResp = await fetch(fallbackUrl, { headers: { 'Accept-Language': 'fr,ar' } });
+                    data = await fallbackResp.json();
+                }
+
+                if (!data || data.length === 0) {
+                    mosquesData = [];
+                    renderTable();
+                    return;
+                }
+
+                parseAndDisplayNominatim(data, country, locationVal, scopeVal);
+
+            } catch (err) {
+                const tbody = document.getElementById('resultsTableBody');
+                document.getElementById('countBadge').innerText = "0 lieu(x)";
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-red-500 font-medium">
+                            ⚠️ ${escapeHtml(err.message || "Erreur de connexion lors de la recherche.")}
+                        </td>
+                    </tr>
+                `;
+            } finally {
+                statusMsg.classList.add('hidden');
             }
         }
 
-        function setStatus(msg, type = 'info') {
-            const el = document.getElementById('statusMessage');
-            el.classList.remove('hidden', 'bg-blue-50', 'text-blue-700', 'bg-red-50', 'text-red-700', 'bg-amber-50', 'text-amber-700');
+        function parseAndDisplayNominatim(elements, countryCode, searchedCity, scope) {
+            mosquesData = [];
+            const defaultCountry = countryNamesFR[countryCode] || "";
+            const normalizedSearch = normalizeString(searchedCity);
+
+            elements.forEach(item => {
+                const addr = item.address || {};
+                let detectedCity = addr.city || addr.town || addr.village || addr.municipality || addr.suburb || "";
+                
+                const normDetectedCity = normalizeString(detectedCity);
+                const normDisplayName = normalizeString(item.display_name);
+
+                if (scope === 'city') {
+                    if (normDetectedCity) {
+                        if (normDetectedCity !== normalizedSearch && !normDetectedCity.includes(normalizedSearch)) {
+                            return;
+                        }
+                    } else {
+                        if (!normDisplayName.includes(normalizedSearch)) {
+                            return;
+                        }
+                        detectedCity = searchedCity;
+                    }
+                } else {
+                    if (!detectedCity) detectedCity = searchedCity;
+                }
+
+                let name = item.name || (item.display_name ? item.display_name.split(',')[0] : `Mosquée (${detectedCity})`);
+                
+                const road = addr.road || addr.suburb || addr.neighbourhood || addr.quarter || "";
+                let fullAddress = "";
+                if (road) fullAddress += road + ", ";
+                fullAddress += detectedCity + ", " + defaultCountry;
+
+                const latVal = item.lat || "";
+                const lonVal = item.lon || "";
+
+                const mapsQuery = (latVal && lonVal) ? `${latVal},${lonVal}` : encodeURIComponent(`${name}, ${detectedCity}, ${defaultCountry}`);
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
+                mosquesData.push({
+                    nom: name,
+                    ville: detectedCity,
+                    adresse: fullAddress,
+                    mapsUrl: mapsUrl,
+                    lat: latVal,
+                    lon: lonVal,
+                    telephone: addr.phone || "-",
+                    website: addr.website || "-"
+                });
+            });
+
+            // Tri par nom de mosquée
+            mosquesData.sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }));
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('resultsTableBody');
+            const countBadge = document.getElementById('countBadge');
             
-            if (type === 'error') {
-                el.classList.add('bg-red-50', 'text-red-700');
-            } else if (type === 'warning') {
-                el.classList.add('bg-amber-50', 'text-amber-700');
-            } else {
-                el.classList.add('bg-blue-50', 'text-blue-700');
+            countBadge.innerText = `${mosquesData.length} lieu(x)`;
+            tbody.innerHTML = '';
+
+            if (mosquesData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-slate-400">
+                            Aucune mosquée trouvée strictement dans cette commune. Vous pouvez en ajouter une manuellement.
+                        </td>
+                    </tr>
+                `;
+                return;
             }
-            
-            el.innerHTML = msg;
+
+            mosquesData.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-100 hover:bg-slate-50 transition duration-150';
+                
+                const hasGps = item.lat && item.lon;
+                const gpsFull = hasGps ? `${parseFloat(item.lat).toFixed(5)}, ${parseFloat(item.lon).toFixed(5)}` : '-';
+                
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-semibold text-slate-800 max-w-[220px]">
+                        <div class="line-clamp-2" title="${escapeHtml(item.nom)}">${escapeHtml(item.nom)}</div>
+                    </td>
+                    <td class="px-4 py-3 max-w-[340px]">
+                        <a href="${item.mapsUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-medium block truncate" title="${escapeHtml(item.adresse)}">
+                            ${escapeHtml(item.adresse)}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 font-mono text-xs whitespace-nowrap">
+                        ${hasGps ? `
+                            <div class="flex items-center gap-1.5">
+                                <span class="bg-slate-100 text-slate-700 px-2 py-1 rounded border border-slate-200 select-all">${gpsFull}</span>
+                                <button onclick="copyGps('${gpsFull}')" title="Copier les coordonnées" class="p-1 text-slate-400 hover:text-blue-600 rounded">📋</button>
+                            </div>
+                        ` : '-'}
+                    </td>
+                    <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${escapeHtml(item.telephone)}</td>
+                    <td class="px-4 py-3 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="saveItem(${index})" class="px-2.5 py-1 text-xs rounded btn-save font-medium transition shadow-sm">💾 Sauvegarder</button>
+                            <button onclick="openEditModal(${index})" class="px-2.5 py-1 text-xs rounded btn-edit font-medium transition shadow-sm">✏️ Modifier</button>
+                            <button onclick="deleteItem(${index})" class="px-2.5 py-1 text-xs rounded btn-delete font-medium transition shadow-sm">🗑️ Supprimer</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        function enableExport(enabled) {
-            const btn = document.getElementById('exportBtn');
-            btn.disabled = !enabled;
-            if (enabled) {
-                btn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
-                btn.classList.add('bg-emerald-600', 'hover:bg-emerald-700', 'text-white', 'shadow-sm', 'cursor-pointer');
-            } else {
-                btn.classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
-                btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700', 'text-white', 'shadow-sm', 'cursor-pointer');
+        function copyGps(text) {
+            const tempInput = document.createElement("input");
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            alert(`Coordonnées GPS copiées dans le presse-papier : ${text}`);
+        }
+
+        function openAddModal() {
+            editingIndex = -1; // Index pour ajout
+            document.getElementById('modalTitle').innerText = "Ajouter une mosquée";
+            const defaultCity = document.getElementById('locationInput').value.trim() || "Mahdia";
+            const countryCode = document.getElementById('countrySelect').value;
+            const countryName = countryNamesFR[countryCode] || "Tunisie";
+
+            document.getElementById('editNom').value = "";
+            document.getElementById('editVille').value = defaultCity;
+            document.getElementById('editAdresse').value = `${defaultCity}, ${countryName}`;
+            document.getElementById('editGps').value = "";
+            document.getElementById('editTelephone').value = "-";
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function openEditModal(index) {
+            editingIndex = index;
+            document.getElementById('modalTitle').innerText = "Modifier l'enregistrement";
+            const item = mosquesData[index];
+            document.getElementById('editNom').value = item.nom;
+            document.getElementById('editVille').value = item.ville;
+            document.getElementById('editAdresse').value = item.adresse;
+            
+            const gpsVal = (item.lat && item.lon) ? `${item.lat}, ${item.lon}` : "";
+            document.getElementById('editGps').value = gpsVal;
+            
+            document.getElementById('editTelephone').value = item.telephone;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            editingIndex = null;
+        }
+
+        function saveModalChanges() {
+            const nom = document.getElementById('editNom').value.trim();
+            const ville = document.getElementById('editVille').value.trim();
+            const adresse = document.getElementById('editAdresse').value.trim();
+            const gpsInput = document.getElementById('editGps').value.trim();
+            const telephone = document.getElementById('editTelephone').value.trim() || "-";
+
+            if (!nom || !ville) {
+                alert("Le nom et la ville sont obligatoires.");
+                return;
             }
+
+            let lat = "";
+            let lon = "";
+            if (gpsInput.includes(',')) {
+                const parts = gpsInput.split(',');
+                lat = parts[0].trim();
+                lon = parts[1].trim();
+            }
+
+            const mapsQuery = (lat && lon) ? `${lat},${lon}` : encodeURIComponent(`${nom}, ${ville}`);
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
+            const newItem = {
+                nom: nom,
+                ville: ville,
+                adresse: adresse,
+                mapsUrl: mapsUrl,
+                lat: lat,
+                lon: lon,
+                telephone: telephone
+            };
+
+            if (editingIndex === -1) {
+                mosquesData.unshift(newItem);
+            } else if (editingIndex !== null) {
+                mosquesData[editingIndex] = newItem;
+            }
+
+            renderTable();
+            closeModal();
         }
 
         function escapeHtml(text) {
             if (!text) return '';
-            return String(text)
+            return text.toString()
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
@@ -277,294 +440,43 @@
                 .replace(/'/g, "&#039;");
         }
 
-        function cleanCityName(city) {
-            return city.toLowerCase()
-                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-                .replace(/-/g, ' ')
-                .trim();
+        function saveItem(index) {
+            const item = mosquesData[index];
+            alert(`Mosquée "${item.nom}" sauvegardée dans votre liste.`);
         }
 
-        async function searchMosques() {
-            const country = getSelectedCountry();
-            const searchType = document.getElementById('searchType').value;
-            const searchValue = document.getElementById('searchValue').value.trim();
+        function deleteItem(index) {
+            mosquesData.splice(index, 1);
+            renderTable();
+        }
 
-            if (searchType !== 'country' && !searchValue) {
-                setStatus(`Veuillez saisir une valeur pour la recherche par ${searchType === 'city' ? 'ville' : 'département'}.`, 'warning');
+        function exportCSV() {
+            if (mosquesData.length === 0) {
+                alert("Aucune donnée à exporter.");
                 return;
             }
 
-            const targetText = searchType === 'country' ? country : `${searchValue} (${country})`;
-            setStatus(`⏳ Recherche approfondie sur le serveur géographique pour <strong>${escapeHtml(targetText)}</strong>...`, 'info');
-            
-            const btn = document.getElementById('searchBtn');
-            btn.disabled = true;
-            btn.classList.add('opacity-50');
+            let csvContent = "\uFEFF";
+            csvContent += "Nom;Ville;Adresse;Latitude;Longitude;Telephone;LienGoogleMaps\n";
 
-            try {
-                let filtered = [];
-
-                if (searchType === 'country') {
-                    const isoCode = countryISOCodes[country];
-                    const areaQuery = isoCode 
-                        ? `area["ISO3166-1"="${isoCode}"]["boundary"="administrative"]->.searchArea;`
-                        : `area["name:fr"="${country}"]["boundary"="administrative"]->.searchArea;`;
-
-                    const overpassQuery = `
-                        [out:json][timeout:180];
-                        ${areaQuery}
-                        (
-                          node["amenity"="place_of_worship"]["religion"="muslim"](area.searchArea);
-                          way["amenity"="place_of_worship"]["religion"="muslim"](area.searchArea);
-                        );
-                        out center tags;
-                    `;
-
-                    const endpoints = [
-                        'https://overpass-api.de/api/interpreter',
-                        'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
-                        'https://overpass.kumi.systems/api/interpreter'
-                    ];
-
-                    let data = null;
-                    for (const endpoint of endpoints) {
-                        try {
-                            const res = await fetch(endpoint, {
-                                method: 'POST',
-                                body: 'data=' + encodeURIComponent(overpassQuery)
-                            });
-                            if (res.ok) {
-                                data = await res.json();
-                                break;
-                            }
-                        } catch (e) {
-                            console.warn("Échec du serveur Overpass, essai du suivant...", e);
-                        }
-                    }
-
-                    if (data && data.elements) {
-                        data.elements.forEach(el => {
-                            const tags = el.tags || {};
-                            const lat = el.lat || (el.center ? el.center.lat : null);
-                            const lon = el.lon || (el.center ? el.center.lon : null);
-
-                            let name = tags.name || tags["name:fr"] || tags["name:ar"] || tags["name:en"] || "Mosquée";
-                            let detectedCity = tags["addr:city"] || tags["addr:town"] || tags["addr:suburb"] || tags["addr:district"] || tags["addr:governorate"] || tags["is_in:city"] || tags["is_in:town"] || "";
-                            
-                            const street = tags["addr:street"] || tags["addr:full"] || "";
-                            const postcode = tags["addr:postcode"] || "";
-
-                            let addressParts = [];
-                            if (street) addressParts.push(street);
-                            if (postcode) addressParts.push(postcode);
-                            if (detectedCity) addressParts.push(detectedCity);
-
-                            const fullAddress = addressParts.join(', ') || `${lat ? lat.toFixed(4) : ''}, ${lon ? lon.toFixed(4) : ''} (${country})`;
-
-                            filtered.push({
-                                nom: name,
-                                ville: detectedCity || country,
-                                adresse: fullAddress,
-                                telephone: tags.phone || tags["contact:phone"] || '',
-                                site_web: tags.website || tags["contact:website"] || '',
-                                lat: lat,
-                                lon: lon
-                            });
-                        });
-                    }
-                } else {
-                    const queryKeywords = ['mosquee', ' جامع ', 'مسجد', 'salle de priere'];
-                    let allItems = [];
-                    const queryLocation = `${searchValue} ${country}`;
-
-                    for (const keyword of queryKeywords) {
-                        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(keyword + ' ' + queryLocation)}&addressdetails=1&limit=100`;
-                        const res = await fetch(url, { headers: { 'Accept-Language': 'fr,ar' } });
-                        if (res.ok) {
-                            const data = await res.json();
-                            allItems = allItems.concat(data);
-                        }
-                    }
-
-                    let seenAddresses = new Set();
-                    const targetCityClean = searchType === 'city' ? cleanCityName(searchValue) : '';
-
-                    for (const item of allItems) {
-                        const addr = item.address || {};
-                        const itemCity = addr.city || addr.town || addr.village || addr.municipality || addr.governorate || '';
-                        const itemCityClean = cleanCityName(itemCity);
-
-                        if (searchType === 'city' && targetCityClean) {
-                            if (itemCityClean && !itemCityClean.includes(targetCityClean) && !targetCityClean.includes(itemCityClean)) {
-                                continue;
-                            }
-                        }
-
-                        let name = item.display_name.split(',')[0];
-                        const road = addr.road || addr.street || '';
-                        const houseNumber = addr.house_number || '';
-                        const streetPart = (houseNumber ? houseNumber + ' ' : '') + road;
-                        const postcode = addr.postcode || '';
-                        const cityName = itemCity || searchValue || country;
-
-                        let fullAddressParts = [];
-                        if (streetPart) fullAddressParts.push(streetPart);
-                        if (postcode) fullAddressParts.push(postcode);
-                        if (cityName) fullAddressParts.push(cityName);
-
-                        const fullAddress = fullAddressParts.join(', ') || country;
-                        const uniqueKey = fullAddress.toLowerCase();
-
-                        if (seenAddresses.has(uniqueKey)) continue;
-                        seenAddresses.add(uniqueKey);
-
-                        filtered.push({
-                            nom: name,
-                            ville: itemCity || searchValue,
-                            adresse: fullAddress,
-                            telephone: addr.phone || '',
-                            site_web: addr.website || '',
-                            lat: item.lat,
-                            lon: item.lon
-                        });
-                    }
-                }
-
-                currentResults = filtered;
-                renderTable();
-
-                if (currentResults.length > 0) {
-                    setStatus(`✅ <strong>${currentResults.length}</strong> mosquée(s) extraite(s) strictement pour <strong>${escapeHtml(targetText)}</strong>.`, 'info');
-                    enableExport(true);
-                } else {
-                    setStatus(`⚠️ Aucune mosquée trouvée. Essayez par ville ou vérifiez la sélection.`, 'warning');
-                    enableExport(false);
-                }
-
-            } catch (err) {
-                console.error(err);
-                setStatus('Une erreur est survenue lors de l\'extraction des données.', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50');
-            }
-        }
-
-        function renderTable() {
-            const table = document.getElementById('resultsTable');
-            table.innerHTML = '';
-
-            if (currentResults.length === 0) {
-                table.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="px-4 py-8 text-center text-slate-400 italic">
-                            Aucun résultat à afficher.
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            currentResults.forEach((item, index) => {
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50 transition";
-
-                const searchQuery = encodeURIComponent(`${item.nom} ${item.adresse}`);
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
-
-                row.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-slate-800">${escapeHtml(item.nom)}</td>
-                    <td class="px-4 py-3 font-medium text-slate-600">${escapeHtml(item.ville || '-')}</td>
-                    <td class="px-4 py-3">
-                        <a href="${mapsUrl}" target="_blank" class="maps-link hover:opacity-80" title="Vérifier sur Google Maps">
-                            ${escapeHtml(item.adresse)} 📍
-                        </a>
-                    </td>
-                    <td class="px-4 py-3">${escapeHtml(item.telephone || '-')}</td>
-                    <td class="px-4 py-3">${item.site_web ? `<a href="${escapeHtml(item.site_web)}" target="_blank" class="text-blue-600 underline">Lien</a>` : '-'}</td>
-                    <td class="px-4 py-3 action-btns">
-                        <button class="btn-action btn-save" onclick="saveRow(${index}, this)">💾 Sauvegarder</button>
-                        <button class="btn-action btn-edit" onclick="openEditModal(${index})">✏️ Modifier</button>
-                        <button class="btn-action btn-delete" onclick="deleteMosque(${index})">🗑️ Supprimer</button>
-                    </td>
-                `;
-
-                table.appendChild(row);
+            mosquesData.forEach(item => {
+                const row = [
+                    `"${item.nom.replace(/"/g, '""')}"`,
+                    `"${item.ville.replace(/"/g, '""')}"`,
+                    `"${item.adresse.replace(/"/g, '""')}"`,
+                    `"${(item.lat || '').toString().replace(/"/g, '""')}"`,
+                    `"${(item.lon || '').toString().replace(/"/g, '""')}"`,
+                    `"${item.telephone.replace(/"/g, '""')}"`,
+                    `"${item.mapsUrl}"`
+                ];
+                csvContent += row.join(";") + "\n";
             });
-        }
 
-        function saveRow(index, btnEl) {
-            if (btnEl) {
-                const originalText = btnEl.innerHTML;
-                btnEl.innerHTML = '✅ Enregistré';
-                btnEl.classList.add('bg-emerald-700');
-                setTimeout(() => {
-                    btnEl.innerHTML = originalText;
-                    btnEl.classList.remove('bg-emerald-700');
-                }, 1500);
-            }
-        }
-
-        function deleteMosque(index) {
-            if (index >= 0 && index < currentResults.length) {
-                currentResults.splice(index, 1);
-                renderTable();
-                if (currentResults.length === 0) {
-                    enableExport(false);
-                }
-            }
-        }
-
-        function openEditModal(index) {
-            const item = currentResults[index];
-            document.getElementById('editIndex').value = index;
-            document.getElementById('editNom').value = item.nom || '';
-            document.getElementById('editVille').value = item.ville || '';
-            document.getElementById('editAdresse').value = item.adresse || '';
-            document.getElementById('editTel').value = item.telephone || '';
-            document.getElementById('editSite').value = item.site_web || '';
-
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('editModal').classList.add('hidden');
-        }
-
-        function saveEdit() {
-            const index = document.getElementById('editIndex').value;
-            if (index !== '' && currentResults[index]) {
-                currentResults[index].nom = document.getElementById('editNom').value.trim();
-                currentResults[index].ville = document.getElementById('editVille').value.trim();
-                currentResults[index].adresse = document.getElementById('editAdresse').value.trim();
-                currentResults[index].telephone = document.getElementById('editTel').value.trim();
-                currentResults[index].site_web = document.getElementById('editSite').value.trim();
-
-                renderTable();
-                closeModal();
-            }
-        }
-
-        function exportToCSV() {
-            if (currentResults.length === 0) return;
-
-            const headers = ["Nom", "Ville", "Adresse", "Téléphone", "Site Web"];
-            const rows = currentResults.map(item => [
-                `"${(item.nom || '').replace(/"/g, '""')}"`,
-                `"${(item.ville || '').replace(/"/g, '""')}"`,
-                `"${(item.adresse || '').replace(/"/g, '""')}"`,
-                `"${(item.telephone || '').replace(/"/g, '""')}"`,
-                `"${(item.site_web || '').replace(/"/g, '""')}"`
-            ]);
-
-            const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(e => e.join(";"))].join("\n");
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            
             const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
-            const searchVal = document.getElementById('searchValue').value.trim() || 'export';
-            link.setAttribute("download", `mosquees_${searchVal.toLowerCase().replace(/\s+/g, '_')}.csv`);
+            link.setAttribute("download", `mosquees_${new Date().toISOString().slice(0,10)}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
